@@ -1,8 +1,26 @@
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "*/tests/*",
+]
 
 [tool.mypy]
 python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
+exclude = [
+    ".*/tests/",
+]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = [
+    "service_a/tests",
+    "service_b/tests",
+    "consumer/tests",
+]
+asyncio_mode = "auto"
