@@ -1,8 +1,6 @@
 import uuid
-
 from src.infrastructure.database import SessionLocal, Task
 from src.infrastructure.rabbitmq import RabbitMQClient
-
 
 class TaskService:
     def __init__(self, rabbitmq: RabbitMQClient):
@@ -10,7 +8,6 @@ class TaskService:
 
     async def create_task(self, equipment_id: str, parameters: dict) -> str:
         task_id = str(uuid.uuid4())
-
         db = SessionLocal()
         try:
             task = Task(
@@ -21,9 +18,7 @@ class TaskService:
             )
             db.add(task)
             db.commit()
-
             await self.rabbitmq.publish_task(task_id, equipment_id, parameters)
-
             return task_id
         finally:
             db.close()
@@ -31,17 +26,20 @@ class TaskService:
     def update_task_status(self, task_id: str, status: str):
         db = SessionLocal()
         try:
-            task = db.query(Task).filter(Task.id == task_id).first()
+            task = self.get_task_by_id(task_id)
             if task:
                 task.status = status
                 db.commit()
         finally:
             db.close()
 
-    def get_task_status(self, task_id: str) -> str | None:
+    def get_task_by_id(self, task_id: str) -> Task | None:
         db = SessionLocal()
         try:
-            task = db.query(Task).filter(Task.id == task_id).first()
-            return task.status if task else None
+            return db.query(Task).filter(Task.id == task_id).first()
         finally:
             db.close()
+
+    def get_task_status(self, task_id: str) -> str | None:
+        task = self.get_task_by_id(task_id)
+        return task.status if task else None

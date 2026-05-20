@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Активация оборудования</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: #f5f5f5; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .card { background: white; border-radius: 16px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        h1 { font-size: 24px; margin-bottom: 8px; }
+        h2 { font-size: 20px; margin-bottom: 16px; color: #333; }
+        .subtitle { color: #666; margin-bottom: 24px; }
+        form { display: flex; flex-direction: column; gap: 16px; }
+        label { font-weight: 600; font-size: 14px; }
+        input, textarea { padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; font-family: monospace; }
+        textarea { font-family: monospace; resize: vertical; }
+        button { background: #0066cc; color: white; border: none; padding: 12px; border-radius: 8px; font-size: 16px; cursor: pointer; }
+        button:hover { background: #0052a3; }
+        .result { background: #f0f0f0; padding: 16px; border-radius: 8px; margin-top: 16px; overflow-x: auto; }
+        .result pre { margin: 0; white-space: pre-wrap; word-break: break-all; }
+        .status-card { background: #e8f4e8; border-left: 4px solid #00aa00; }
+        .error-card { background: #ffe8e8; border-left: 4px solid #cc0000; }
+        .pending-card { background: #fff3e0; border-left: 4px solid #ffaa00; }
+        .hidden { display: none; }
+        .flex-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .task-id-input { flex: 1; }
+        .copy-btn { padding: 8px 12px; background: #eee; border: 1px solid #ccc; border-radius: 6px; cursor: pointer; }
+        .copy-btn:hover { background: #ddd; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="card">
+        <h1>⚙️ Активация оборудования</h1>
+        <div class="subtitle">Создание задачи на активацию устройства</div>
+
+        <form id="createForm">
+            <div>
+                <label>Серийный номер (латиница/цифры, мин 6 символов)</label>
+                <input type="text" id="serial" placeholder="ABC123" required pattern="[A-Za-z0-9]{6,}" style="font-family: monospace;">
+            </div>
+            <div>
+                <label>Параметры активации (JSON)</label>
+                <textarea id="params" rows="8">{
+  "timeoutInSeconds": 60,
+  "parameters": {
+    "username": "admin",
+    "password": "admin",
+    "vlan": 534,
+    "interfaces": [1, 2, 3, 4]
+  }
+}</textarea>
+            </div>
+            <button type="submit">🚀 Создать задачу</button>
+        </form>
+
+        <div id="createResult" class="result hidden"></div>
+    </div>
+
+    <div class="card">
+        <h2>🔍 Проверка статуса задачи</h2>
+
+        <form id="statusForm">
+            <div>
+                <label>Серийный номер</label>
+                <input type="text" id="checkSerial" placeholder="ABC123" required pattern="[A-Za-z0-9]{6,}">
+            </div>
+            <div>
+                <label>Task ID</label>
+                <div class="flex-row">
+                    <input type="text" id="taskId" placeholder="uuid" class="task-id-input" required>
+                    <button type="button" class="copy-btn" onclick="copyTaskId()">📋 Копировать</button>
+                </div>
+            </div>
+            <button type="submit">📊 Проверить статус</button>
+        </form>
+
+        <div id="statusResult" class="result hidden"></div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = '/api/v1';
+    let lastTaskId = null;
+
+    document.getElementById('createForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const serial = document.getElementById('serial').value.trim();
+        const paramsText = document.getElementById('params').value;
+        const createResult = document.getElementById('createResult');
+
+        try {
+            const params = JSON.parse(paramsText);
+            const response = await fetch(`${API_BASE}/equipment/cpe/${serial}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(params)
+            });
+            const data = await response.json();
+
+            createResult.classList.remove('hidden');
+            if (response.ok) {
+                lastTaskId = data.taskId;
+                document.getElementById('taskId').value = lastTaskId;
+                document.getElementById('checkSerial').value = serial;
+                createResult.className = 'result status-card';
+                createResult.innerHTML = `<pre>✅ Задача создана!\nTask ID: ${data.taskId}\n\n💡 Совет: сохраните Task ID, он понадобится для проверки статуса.</pre>`;
+            } else {
+                createResult.className = 'result error-card';
+                createResult.innerHTML = `<pre>❌ Ошибка: ${data.message || JSON.stringify(data, null, 2)}</pre>`;
+            }
+        } catch (err) {
+            createResult.className = 'result error-card';
+            createResult.innerHTML = `<pre>❌ Ошибка: ${err.message}</pre>`;
+        }
+    });
+
+    document.getElementById('statusForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const serial = document.getElementById('checkSerial').value.trim();
+        const taskId = document.getElementById('taskId').value.trim();
+        const statusResult = document.getElementById('statusResult');
+
+        try {
+            const response = await fetch(`${API_BASE}/equipment/cpe/${serial}/task/${taskId}`);
+            const data = await response.json();
+
+            statusResult.classList.remove('hidden');
+            if (response.status === 200) {
+                statusResult.className = 'result status-card';
+                statusResult.innerHTML = `<pre>✅ ${data.message || 'Завершено'}\n\nПолный ответ: ${JSON.stringify(data, null, 2)}</pre>`;
+            } else if (response.status === 204 || data.code === 204) {
+                statusResult.className = 'result pending-card';
+                statusResult.innerHTML = `<pre>⏳ ${data.message || 'Задача выполняется...'}\n\nПроверьте через несколько секунд.</pre>`;
+            } else {
+                statusResult.className = 'result error-card';
+                statusResult.innerHTML = `<pre>❌ ${data.message || 'Задача не найдена'}\n\n${JSON.stringify(data, null, 2)}</pre>`;
+            }
+        } catch (err) {
+            statusResult.className = 'result error-card';
+            statusResult.innerHTML = `<pre>❌ Ошибка: ${err.message}</pre>`;
+        }
+    });
+
+    function copyTaskId() {
+        const taskIdInput = document.getElementById('taskId');
+        taskIdInput.select();
+        document.execCommand('copy');
+        alert('Task ID скопирован в буфер обмена');
+    }
+</script>
+</body>
+</html>
