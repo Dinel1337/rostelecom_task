@@ -14,5 +14,9 @@ async def provision(
     equipment_id: str, 
     request: ProvisionRequest,
     sleep_time: int = Depends(get_sleep_seconds)):
+
+    test_plug = SerialRegex(equipment_id)
+    
     await asyncio.sleep(sleep_time)
+    
     return ProvisionResponse(code=200, message="success")
