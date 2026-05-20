@@ -69,7 +69,7 @@ def test_get_task_status_not_found(monkeypatch):
     response = client.get("/api/v1/equipment/cpe/ABC123/task/test-task")
 
     assert response.status_code == 404
-    assert response.json()["detail"] == "Не найдена таска"
+    assert response.json()["message"] == "Не найдена таска"
 
 
 def test_get_task_wrong_equipment(monkeypatch):
@@ -79,4 +79,4 @@ def test_get_task_wrong_equipment(monkeypatch):
     response = client.get("/api/v1/equipment/cpe/ABC123/task/test-task")
 
     assert response.status_code == 404
-    assert response.json()["detail"] == "Таска не найдена по устройству"
+    assert response.json()["message"] == "Таска не найдена по устройству"

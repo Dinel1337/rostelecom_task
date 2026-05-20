@@ -1,4 +1,12 @@
-from fastapi import APIRouter, HTTPException, Depends, Request, status
+from fastapi import (
+    APIRouter, 
+    HTTPException,
+    Depends, 
+    Request, 
+    status
+)
+from fastapi.responses import JSONResponse
+
 
 from src.schema import (
     ProvisionRequest,
@@ -104,7 +112,7 @@ async def get_task_status(
     if task.status == "completed":
         return TaskStatusResponse(code=200, message="Выполнено")
 
-    return {
-        "code": 204,
-        "message": "Таска все еще в обработке!"
-    }
+    return JSONResponse(
+        status_code=204,
+        content={"code": 204, "message": "Таска все еще в обработке!"}
+    )

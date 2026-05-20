@@ -29,6 +29,7 @@ docker-compose up --build
 После запуска сервиса B документация доступна по адресу:
 
 - Swagger UI: http://localhost:8000/docs
+
 - ReDoc: http://localhost:8000/redoc
 
 ### Веб-интерфейс
