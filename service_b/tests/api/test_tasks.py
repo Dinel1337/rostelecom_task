@@ -1,5 +1,3 @@
-from unittest.mock import AsyncMock
-
 from fastapi.testclient import TestClient
 
 from src.main import app
@@ -51,7 +49,7 @@ def test_create_task_invalid_serial():
     assert response.status_code == 404
     assert response.json() == {
         "code": 404,
-        "message": "The requested equipment is not found"
+        "message": "Не найдено"
     }
 
 

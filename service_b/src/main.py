@@ -2,7 +2,7 @@ import asyncio
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from src.config import settings
+
 from src.api import router
 from src.exceptions.handlers import register_exception_handlers
 from src.infrastructure.database import init_db

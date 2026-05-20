@@ -27,7 +27,7 @@ def register_exception_handlers(app: FastAPI):
         logger.error(f"ValueError: {exc}")
         return JSONResponse(
             status_code=404,
-            content={"code": 404, "message": "The requested equipment is not found"}
+            content={"code": 404, "message": "Не найдено"}
         )
     
     @app.exception_handler(Exception)
