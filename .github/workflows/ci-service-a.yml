@@ -5,15 +5,18 @@ on:
     branches: [ "ci-service-a", "develop", "main" ]
     paths:
       - 'service_a/**'
+      - '.github/workflows/ci-service-a.yml'
   pull_request:
     branches: [ "develop", "main" ]
     paths:
       - 'service_a/**'
+      - '.github/workflows/ci-service-a.yml'
   workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       
@@ -38,4 +41,4 @@ jobs:
       - name: Test with pytest
         run: |
           cd service_a
-          uv run pytest tests/ -v
+          uv run pytest tests/ -v --timeout=30 --maxfail=3
