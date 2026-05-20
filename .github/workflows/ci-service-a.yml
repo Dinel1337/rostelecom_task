@@ -2,14 +2,21 @@ name: CI Service A
 
 on:
   push:
-    branches: [ "ci-service-a" ]
+    branches: [ "ci-service-a", "develop", "main" ]
     paths:
       - 'service_a/**'
+      - '.github/workflows/ci-service-a.yml'
+  pull_request:
+    branches: [ "develop", "main" ]
+    paths:
+      - 'service_a/**'
+      - '.github/workflows/ci-service-a.yml'
   workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       
@@ -18,7 +25,7 @@ jobs:
         with:
           version: "latest"
       
-      - name: Set up Python
+      - name: Install Python
         run: uv python install 3.12
       
       - name: Install dependencies
@@ -34,4 +41,4 @@ jobs:
       - name: Test with pytest
         run: |
           cd service_a
-          uv run pytest tests/ -v
+          uv run pytest tests/ -v --maxfail=3
