@@ -1,6 +1,6 @@
 FROM python:3.12-slim AS builder
 WORKDIR /app
-COPY pyproject.toml uv.lock ./
+COPY pyproject.toml ./
 RUN pip install uv && uv sync --frozen --no-dev
 
 FROM python:3.12-slim
