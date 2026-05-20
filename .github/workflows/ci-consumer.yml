@@ -2,12 +2,12 @@ name: CI Consumer
 
 on:
   push:
-    branches: ["develop", "main"]
+    # branches: ["develop", "main"]
     paths:
       - "consumer/**"
       - ".github/workflows/ci-consumer.yml"
   pull_request:
-    branches: ["develop", "main"]
+    # branches: ["develop", "main"]
     paths:
       - "consumer/**"
 
