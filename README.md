@@ -1,7 +1,9 @@
-### коментарий разраба
-не ругайтесь на русские message, все таки это не прод решения
+> **Комент разраба**
+> 
+> * Не ругайтесь на русские `message` - это тестовое задание, не production решение.
+> * Для HTTPS используется самоподписной сертификат. Браузер может показывать предупреждение - это нормально для локального тестирования.
 
-### Компоненты
+## Компоненты
 
 | Сервис | Порт | Описание |
 |--------|------|----------|
@@ -15,7 +17,6 @@
 
 ### Требования
 - Docker & Docker Compose
-- Python 3.12+ (для локального запуска)
 
 ### Быстрый старт (Docker)
 
@@ -24,3 +25,64 @@ git clone https://github.com/Dinel1337/rostelecom_task.git
 cd rostelecom_task
 docker-compose up --build
 ```
+## API Документация
+После запуска сервиса B документация доступна по адресу:
+
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
+
+### Веб-интерфейс
+Для удобства тестирования реализован простой веб-интерфейс:
+
+- http://localhost:8000/api/v1/ — форма создания и проверки задач
+
+## Примеры запросов
+### Создать задачу
+```bash
+curl -X POST http://localhost:8000/api/v1/equipment/cpe/ABC123 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "timeoutInSeconds": 60,
+    "parameters": {
+      "username": "admin",
+      "password": "admin",
+      "vlan": 534,
+      "interfaces": [1,2,3,4]
+    }
+  }'
+```
+### Ответ:
+```json
+{
+  "code": 200,
+  "taskId": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+### Проверить статус
+```bash
+curl http://localhost:8000/api/v1/equipment/cpe/ABC123/task/550e8400-e29b-41d4-a716-446655440000
+```
+
+### Ответ (завершено):
+
+```json
+{
+  "code": 200,
+  "message": "Выполнено"
+}
+```
+
+### Ответ (выполняется):
+
+```json
+{
+  "code": 204,
+  "message": "Таска все еще в обработке!"
+}
+```
+
+## Мониторинг
+- RabbitMQ Management: http://localhost:15672 (guest/guest)
+- Healthcheck Service A: http://localhost:8001/api/v1/health
+- Healthcheck Service B: http://localhost:8000/api/v1/health
