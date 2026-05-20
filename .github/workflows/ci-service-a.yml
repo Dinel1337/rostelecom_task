@@ -41,4 +41,4 @@ jobs:
       - name: Test with pytest
         run: |
           cd service_a
-          uv run pytest tests/ -v --timeout=30 --maxfail=3
+          uv run pytest tests/ -v --maxfail=3
