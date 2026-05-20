@@ -26,7 +26,7 @@ async def lifespan(app: FastAPI):
     yield
     
     await rabbitmq.close()
-    logger.info("Старт")
+    logger.info("Стоп")
 
 def create_app() -> FastAPI:
     app = FastAPI(
