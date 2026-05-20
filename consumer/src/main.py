@@ -18,11 +18,11 @@ async def main():
             data = json.loads(message.body.decode())
             asyncio.create_task(consumer.process_task(data))
     
-    logger.info(f"Starting consumer with {settings.CONCURRENT_WORKERS} workers (prefetch)")
+    logger.info(f"Коньсьюмер стартанул: {settings.CONCURRENT_WORKERS}")
     await rabbitmq.consume_tasks(on_message)
 
 if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        logger.info("Consumer stopped")
+        logger.info("умер воркер")

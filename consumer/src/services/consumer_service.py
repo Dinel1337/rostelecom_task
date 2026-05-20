@@ -29,7 +29,7 @@ class ConsumerService:
                         status = "failed"
                         break
             except Exception as e:
-                logger.warning(f"Attempt {attempt} failed for task {task_id}: {e}")
+                logger.warning(f"Попытка {attempt};таска {task_id}: {e}")
                 if attempt == settings.MAX_RETRIES:
                     status = "failed"
                 else:
@@ -38,4 +38,4 @@ class ConsumerService:
                 break
         
         await self.rabbitmq.publish_result(task_id, status)
-        logger.info(f"Task {task_id} completed with status {status}")
+        logger.info(f"Таска {task_id}; статус {status}")
