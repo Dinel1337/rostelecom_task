@@ -1,11 +1,11 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from src.schema import ProvisionRequest, CreateTaskResponse, TaskStatusResponse
 from src.domain import SerialRegex
 from src.services.task_service import TaskService
 
 router = APIRouter()
 
-def get_task_service(request):
+def get_task_service(request:Request):
     return TaskService(request.app.state.rabbitmq)
 
 @router.post("/equipment/cpe/{equipment_id}", response_model=CreateTaskResponse)

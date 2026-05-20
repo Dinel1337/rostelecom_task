@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tasks
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  service_a:
+    build: ./service_a
+    ports:
+      - "8001:8001"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      RABBIT_URL: amqp://guest:guest@rabbitmq:5672/
+      SERVICE_A_SLEEP: "60"
+    restart: unless-stopped
+
+  service_b:
+    build: ./service_b
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres:5432/tasks
+      RABBIT_URL: amqp://guest:guest@rabbitmq:5672/
+      DEBUG: "false"
+    restart: unless-stopped
+
+  consumer:
+    build: ./consumer
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      service_a:
+        condition: service_started
+    environment:
+      RABBIT_URL: amqp://guest:guest@rabbitmq:5672/
+      SERVICE_A_URL: http://service_a:8001/api/v1/equipment/cpe
+      MAX_RETRIES: 3
+      RETRY_DELAY: 5.0
+      CONCURRENT_WORKERS: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

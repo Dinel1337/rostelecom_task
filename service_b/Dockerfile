@@ -13,7 +13,4 @@ ENV PYTHONUNBUFFERED=1
 RUN useradd --create-home appuser && chown -R appuser /app
 USER appuser
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
-
 CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
