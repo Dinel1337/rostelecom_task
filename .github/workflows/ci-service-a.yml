@@ -1,0 +1,40 @@
+name: CI Service A
+
+on:
+  push:
+    branches: [ "ci-service-a" ]
+    paths:
+      - 'service_a/**'
+  pull_request:
+    branches: [ "develop", "main" ]
+    paths:
+      - 'service_a/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+      
+      - name: Set up Python
+        run: uv python install 3.12
+      
+      - name: Install dependencies
+        run: |
+          cd service_a
+          uv sync
+      
+      - name: Lint with ruff
+        run: |
+          cd service_a
+          uv run ruff check .
+      
+      - name: Test with pytest
+        run: |
+          cd service_a
+          uv run pytest tests/ -v
