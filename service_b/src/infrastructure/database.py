@@ -17,23 +17,13 @@ class Task(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-# в проде postgresql, иначе юзаем sqlite
-if settings.DEBUG:
-    DATABASE_URL = settings.DATABASE_URL_sqlite
-    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-else:
-    DATABASE_URL = settings.DATABASE_URL_asyncpg
-    engine = create_engine(DATABASE_URL)
-
+engine = create_engine(settings.DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def init_db():
-    """Создаёт все таблицы в БД"""
     Base.metadata.create_all(bind=engine)
-    print(f"Бдшка поднята: {DATABASE_URL}")
 
 def get_db():
-    """DI генератор"""
     db = SessionLocal()
     try:
         yield db

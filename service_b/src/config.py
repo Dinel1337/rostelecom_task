@@ -6,17 +6,24 @@ load_dotenv()
 
 class Settings(BaseSettings):
     DB_USER: str = "postgres"
-    DB_PASSWORD: str = "postgres"
-    DB_HOST: str = "localhost"
+    DB_PASSWORD: str = "dinelefox"
+    DB_HOST: str = "postgres"
     DB_PORT: int = 5432
-    DB_NAME: str = "tasks"
+    DB_NAME: str = "all_solvit"
     
-    RABBIT_URL: str = "amqp://guest:guest@localhost:5672/"
+    RABBIT_URL: str = "amqp://guest:guest@rabbitmq:5672/"
     
     UVICORN_HOST: str = "0.0.0.0"
     UVICORN_PORT: int = 8000
     
-    DEBUG: bool = False
+    DEBUG: bool = True
+    
+    SECRET_KEY: str = ""
+    ALGORITHM: str = "HS256"
+    TOKEN: str = ""
+    
+    HIDE_DEV_FILES: bool = False
+    RESTART_PG: int = 0
     
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -26,25 +33,7 @@ class Settings(BaseSettings):
     
     @computed_field
     @property
-    def DATABASE_URL_asyncpg(self) -> str:
-        """Асинхронный URL для SQLAlchemy (asyncpg)"""
+    def DATABASE_URL(self) -> str:
         return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
-    
-    @computed_field
-    @property
-    def DATABASE_URL_psycopg(self) -> str:
-        """Синхронный URL для SQLAlchemy (psycopg)"""
-        return f"postgresql+psycopg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
-    
-    @computed_field
-    @property
-    def DATABASE_URL_sqlite(self) -> str:
-        """SQLite для разработки (запасной вариант)"""
-        return "sqlite:///./tasks.db"
 
 settings = Settings()
-
-if settings.DEBUG:
-    print(f"для отладочки")
-    print(f"Бдшка: {settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}")
-    print(f"Кролик: {settings.RABBIT_URL}")
