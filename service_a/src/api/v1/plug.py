@@ -9,5 +9,5 @@ router = APIRouter()
 @router.post("/equipment/cpe/{equipment_id}")
 async def provision(equipment_id: str, request: ProvisionRequest):
     SerialRegex(equipment_id)  # если ValueError, улетает в глобальный обработчик
-    await asyncio.sleep(60)
+    await asyncio.sleep(59.6)
     return ProvisionResponse(code=200, message="success")
