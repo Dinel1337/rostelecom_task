@@ -1,5 +1,7 @@
 import aio_pika
 import json
+import asyncio
+
 from src.config import settings
 
 class RabbitMQClient:
@@ -26,6 +28,23 @@ class RabbitMQClient:
             delivery_mode=aio_pika.DeliveryMode.PERSISTENT
         )
         await self.channel.default_exchange.publish(message, routing_key="provisioning_tasks")
+    
+    async def consume_results(self, callback):
+        if not self.channel:
+            await self.connect()
+        
+        queue = await self.channel.declare_queue("provisioning_results", durable=True)
+        
+        async def on_message(message: aio_pika.IncomingMessage):
+            async with message.process():
+                try:
+                    data = json.loads(message.body.decode())
+                    await callback(data)
+                except Exception as e:
+                    print(f"Error processing result: {e}")
+        
+        await queue.consume(on_message)
+        await asyncio.Future()
     
     async def close(self):
         if self.connection:

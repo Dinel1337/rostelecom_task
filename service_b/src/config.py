@@ -18,13 +18,6 @@ class Settings(BaseSettings):
     
     DEBUG: bool = True
     
-    SECRET_KEY: str = ""
-    ALGORITHM: str = "HS256"
-    TOKEN: str = ""
-    
-    HIDE_DEV_FILES: bool = False
-    RESTART_PG: int = 0
-    
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
@@ -34,6 +27,9 @@ class Settings(BaseSettings):
     @computed_field
     @property
     def DATABASE_URL(self) -> str:
-        return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+        if self.DEBUG:
+            return "sqlite:///./tasks.db"
+        else:
+            return f"postgresql+psycopg2://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
 settings = Settings()

@@ -39,4 +39,5 @@ htmlcov/
 .ruff_cache/
 .mypy_cache/
 
-.bin
+.binservice_b/.env
+.env

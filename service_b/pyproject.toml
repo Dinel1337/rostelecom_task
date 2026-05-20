@@ -12,6 +12,7 @@ dependencies = [
     "aio-pika>=9.4.0",
     "python-dotenv>=1.2.2",
     "pydantic-settings>=2.14.1",
+    "psycopg2-binary>=2.9.12",
 ]
 
 [dependency-groups]

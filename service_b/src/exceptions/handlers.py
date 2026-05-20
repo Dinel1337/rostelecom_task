@@ -37,10 +37,3 @@ def register_exception_handlers(app: FastAPI):
             status_code=500,
             content={"code": 500, "message": "Internal provisioning exception"}
         )
-
-@app.exception_handler(HTTPException)
-async def http_exception_handler(request: Request, exc: HTTPException):
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"code": exc.status_code, "message": exc.detail}
-    )
