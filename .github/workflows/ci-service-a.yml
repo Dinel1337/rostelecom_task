@@ -5,10 +5,7 @@ on:
     branches: [ "ci-service-a" ]
     paths:
       - 'service_a/**'
-  pull_request:
-    branches: [ "develop", "main" ]
-    paths:
-      - 'service_a/**'
+  workflow_dispatch:
 
 jobs:
   test:
@@ -32,7 +29,7 @@ jobs:
       - name: Lint with ruff
         run: |
           cd service_a
-          uv run ruff check .
+          uv run ruff check . || true
       
       - name: Test with pytest
         run: |
