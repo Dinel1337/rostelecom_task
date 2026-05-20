@@ -29,7 +29,7 @@ class RabbitMQClient:
         )
         await self.channel.default_exchange.publish(message, routing_key="provisioning_tasks")
     
-    async def consume_results(self, callback):
+    async def consume_results(self, callback: callable):
         if not self.channel:
             await self.connect()
         

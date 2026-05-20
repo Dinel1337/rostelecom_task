@@ -9,11 +9,10 @@ router = APIRouter()
 async def get_sleep_seconds() -> int:
     return 60
 
-@router.post("/equipment/cpe/{equipment_id}")
+@router.post("/equipment/cpe/{equipment_id}", response_model=ProvisionResponse)
 async def provision(
     equipment_id: str, 
     request: ProvisionRequest,
-    sleep_time:int = Depends(get_sleep_seconds)):
-    SerialRegex(equipment_id)  # если ValueError, улетает в глобальный обработчик
+    sleep_time: int = Depends(get_sleep_seconds)):
     await asyncio.sleep(sleep_time)
     return ProvisionResponse(code=200, message="success")

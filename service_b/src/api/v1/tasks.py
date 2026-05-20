@@ -18,7 +18,7 @@ async def create_task(
     
     task_id = await task_service.create_task(
         equipment_id=equipment_id,
-        parameters=request.parameters.dict()
+        parameters=request.parameters.model_dump()
     )
     
     return CreateTaskResponse(code=200, taskId=task_id)
@@ -33,9 +33,9 @@ async def get_task_status(
     
     status = task_service.get_task_status(task_id)
     if status is None:
-        raise HTTPException(status_code=404, detail="Ниче нету")
+        raise HTTPException(status_code=404, detail="The requested task is not found")
     
     if status == "completed":
-        return TaskStatusResponse(code=200, message="Выполнено")
+        return TaskStatusResponse(code=200, message="Completed")
     else:
-        return TaskStatusResponse(code=204, message="Таска запущена")
+        return TaskStatusResponse(code=200, message="Task is still running")

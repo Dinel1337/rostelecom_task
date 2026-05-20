@@ -3,7 +3,7 @@ import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from src.config import settings
-from src.api.v1 import tasks
+from src.api import router
 from src.exceptions.handlers import register_exception_handlers
 from src.infrastructure.database import init_db
 from src.infrastructure.rabbitmq import RabbitMQClient
@@ -33,7 +33,7 @@ async def lifespan(app: FastAPI):
 
 def create_app() -> FastAPI:
     app = FastAPI(title="Service B - Task Orchestrator", version="1.0.0", lifespan=lifespan)
-    app.include_router(tasks.router, prefix="/api/v1")
+    app.include_router(router, prefix="/api/v1")
     register_exception_handlers(app)
     return app
 

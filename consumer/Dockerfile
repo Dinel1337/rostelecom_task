@@ -10,7 +10,4 @@ COPY src/ ./src/
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONUNBUFFERED=1
 
-RUN useradd --create-home appuser && chown -R appuser /app
-USER appuser
-
 CMD ["python", "-m", "src.main"]

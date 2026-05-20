@@ -9,20 +9,22 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 async def main():
-    rabbitmq = RabbitMQClient()
-    await rabbitmq.connect()
-    consumer = ConsumerService(rabbitmq)
-    
-    async def on_message(message):
-        async with message.process():
-            data = json.loads(message.body.decode())
-            asyncio.create_task(consumer.process_task(data))
-    
-    logger.info(f"Коньсьюмер стартанул: {settings.CONCURRENT_WORKERS}")
-    await rabbitmq.consume_tasks(on_message)
+    while True:
+        try:
+            rabbitmq = RabbitMQClient()
+            await rabbitmq.connect()
+            consumer = ConsumerService(rabbitmq)
+            
+            async def on_message(message):
+                async with message.process():
+                    data = json.loads(message.body.decode())
+                    asyncio.create_task(consumer.process_task(data))
+            
+            logger.info("Consumer connected, waiting for tasks...")
+            await rabbitmq.consume_tasks(on_message)
+        except Exception as e:
+            logger.error("Consumer error: %s, reconnecting in 5 seconds...", e)
+            await asyncio.sleep(5)
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        logger.info("умер воркер")
+    asyncio.run(main())

@@ -9,14 +9,14 @@ class Settings(BaseSettings):
     DB_PASSWORD: str = "dinelefox"
     DB_HOST: str = "postgres"
     DB_PORT: int = 5432
-    DB_NAME: str = "all_solvit"
+    DB_NAME: str = "tasks"
     
     RABBIT_URL: str = "amqp://guest:guest@rabbitmq:5672/"
     
     UVICORN_HOST: str = "0.0.0.0"
     UVICORN_PORT: int = 8000
     
-    DEBUG: bool = True
+    DEBUG: bool = False  # по умолчанию False, переопределяется из env
     
     model_config = SettingsConfigDict(
         env_file=".env",

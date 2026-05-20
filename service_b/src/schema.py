@@ -1,9 +1,8 @@
 from pydantic import BaseModel, field_validator
-from typing import Optional, List
+from typing import Optional, List, Callable
 
 class StripStringsModel(BaseModel):
     @field_validator('*', mode='before')
-    @classmethod # вот это не обязательно, НО УСЛОВНО старый пайдентик мы юзаем
     def strip_all_strings(cls, v):
         if isinstance(v, str):
             return v.strip()

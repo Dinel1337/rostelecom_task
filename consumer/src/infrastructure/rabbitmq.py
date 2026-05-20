@@ -14,7 +14,7 @@ class RabbitMQClient:
         await self.channel.declare_queue("provisioning_tasks", durable=True)
         await self.channel.declare_queue("provisioning_results", durable=True)
     
-    async def consume_tasks(self, callback):
+    async def consume_tasks(self, callback: callable):
         if not self.channel:
             await self.connect()
         queue = await self.channel.declare_queue("provisioning_tasks", durable=True)
