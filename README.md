@@ -17,6 +17,12 @@
 
 ## Запуск
 
+```bash
+cp .env.example .env
+cp service_b/.env.example service_b/.env
+cp consumer/.env.example consumer/.env
+```
+
 ### Требования
 - Docker & Docker Compose
 

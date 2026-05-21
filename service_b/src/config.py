@@ -1,12 +1,9 @@
-from pydantic import computed_field
+from pydantic import computed_field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from dotenv import load_dotenv
-
-load_dotenv()
 
 class Settings(BaseSettings):
-    DB_USER: str = "postgres"
-    DB_PASSWORD: str = "dinelefox"
+    DB_USER: str
+    DB_PASSWORD: SecretStr
     DB_HOST: str = "postgres"
     DB_PORT: int = 5432
     DB_NAME: str = "tasks"
@@ -16,7 +13,7 @@ class Settings(BaseSettings):
     UVICORN_HOST: str = "0.0.0.0"
     UVICORN_PORT: int = 8000
     
-    DEBUG: bool = False  # по умолчанию False, переопределяется из env
+    DEBUG: bool = False
     
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -29,7 +26,8 @@ class Settings(BaseSettings):
     def DATABASE_URL(self) -> str:
         if self.DEBUG:
             return "sqlite:///./tasks.db"
-        else:
-            return f"postgresql+psycopg2://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+        return (f"postgresql+psycopg2://{self.DB_USER}:"
+                f"{self.DB_PASSWORD.get_secret_value()}@"
+                f"{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}")
 
 settings = Settings()
