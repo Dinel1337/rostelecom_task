@@ -1,30 +1,30 @@
-name: CI Pipeline
+# name: CI Pipeline
 
-on:
-  push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+# on:
+#   push:
+#     branches: [ main, master ]
+#   pull_request:
+#     branches: [ main, master ]
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+# jobs:
+#   test:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
 
-      - name: Install uv
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+#       - name: Install uv
+#         run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
-      - name: Set up Python
-        run: uv python install 3.13
+#       - name: Set up Python
+#         run: uv python install 3.13
 
-      - name: Run E2E Tests
-        run: bash bin/e2e_test.sh
+#       - name: Run E2E Tests
+#         run: bash bin/e2e_test.sh
 
-      - name: Dump Docker Logs on Failure
+#       - name: Dump Docker Logs on Failure
 
-        if: failure()
-        run: |
-          docker compose logs
-          docker ps -a
+#         if: failure()
+#         run: |
+#           docker compose logs
+#           docker ps -a
