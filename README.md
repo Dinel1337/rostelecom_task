@@ -25,6 +25,25 @@ git clone https://github.com/Dinel1337/rostelecom_task.git
 cd rostelecom_task
 docker-compose up --build
 ```
+
+## Автоматический деплой (Ansible)
+
+В проекте настроена автоматизация развертывания с помощью Ansible. Плейбук полностью автономен: если на целевом сервере не установлен Docker, Ansible установит и настроит его автоматически.
+
+### Инструкция по запуску:
+Установите Ansible на управляющую машину (если еще не установлен):
+```bash
+sudo apt update && sudo apt install ansible -y
+```
+
+Откройте файл ansible/inventory.ini и укажите IP-адрес вашего целевого сервера (или оставьте localhost).
+
+Запустите сценарий деплоя:
+
+```Bash
+ansible-playbook -i ansible/inventory.ini ansible/deploy.ansible.yml
+```
+
 ## API Документация
 После запуска сервиса B документация доступна по адресу:
 

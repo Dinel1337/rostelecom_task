@@ -1,0 +1,53 @@
+---
+- name: Деплой асинхронного сервиса конфигурации оборудования
+  hosts: app_servers
+  become: yes
+
+  tasks:
+    - name: Обновление кэша пакетов и установка системных зависимостей
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - python3-pip
+        state: present
+        update_cache: yes
+      tags: [ 'infra', 'apt' ]
+
+    - name: Установка Docker и Docker Compose Plugin
+      apt:
+        name:
+          - docker.io
+          - docker-compose-plugin
+        state: present
+      tags: [ 'infra', 'apt' ]
+
+    - name: Установка библиотеки-коннектора docker для Python
+      apt:
+        name: python3-docker
+        state: present
+      tags: [ 'infra', 'apt' ]
+
+    - name: Создание директории для проекта на удаленном сервере
+      file:
+        path: /opt/rostelecom_task
+        state: directory
+        mode: '0755'
+      tags: [ 'deploy' ]
+
+    - name: Копирование исходного кода проекта на server
+      copy:
+        src: ../
+        dest: /opt/rostelecom_task/
+        mode: '0755'
+      tags: [ 'deploy' ]
+
+    - name: Сборка образов и запуск контейнеров через Docker Compose
+      community.docker.docker_compose_v2:
+        project_src: /opt/rostelecom_task
+        state: present
+        build: always
+        recreate: always
+      tags: [ 'deploy' ]
