@@ -8,6 +8,10 @@ cleanup() {
 }
 trap cleanup EXIT
 
+cp .env.example .env
+cp service_b/.env.example service_b/.env
+cp consumer/.env.example consumer/.env
+
 echo "Запуск инфраструктуры..."
 docker compose up -d
 
