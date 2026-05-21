@@ -26,7 +26,7 @@ cp consumer/.env.example consumer/.env
 ```
 
 ### Требования
-- Docker & Docker Compose
+- Docker & Docker Compose(ЕСЛИ ВЫ НА ВИРТУАЛКЕ, НЕ ЗАБУДЬТЕ УСТАНОВИТЬ!)
 
 ### Быстрый старт (Docker)
 
