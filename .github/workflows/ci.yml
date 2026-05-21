@@ -1,0 +1,42 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Set up Python
+        run: uv python install 3.13
+
+      - name: Start services
+        run: docker compose up -d
+
+      - name: Wait for API
+        run: |
+          echo "Ожидание готовности API..."
+          for i in {1..30}; do
+            if curl -s http://localhost:8000/api/v1/equipment/cpe/ABC123456 > /dev/null || [ $? -eq 22 ]; then
+              echo "API готов!"
+              exit 0
+            fi
+            echo "API еще спит..."
+            sleep 2
+          done
+          echo "API не ответил!" && exit 1
+
+      - name: Run Tests
+        run: uv run pytest tests/api/test_e2e_flow.py --verbose
+
+      - name: Очистка
+        if: always()
+        run: docker compose down
