@@ -41,7 +41,8 @@ docker-compose up --build
 ### Инструкция по запуску:
 Установите Ansible на управляющую машину (если еще не установлен):
 ```bash
-sudo apt update && sudo apt install ansible -y && sudo apt-get install rsync -y
+sudo apt update && sudo apt install ansible -y && sudo apt-get install rsync -y 
+ansible-galaxy collection install community.docker
 
 sudo rm -rf /opt/rostelecom_task/*
 ```
