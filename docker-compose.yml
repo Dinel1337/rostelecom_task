@@ -1,16 +1,18 @@
 services:
   postgres:
     image: postgres:15
+    env_file:
+      - .env
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB:-tasks}
+      POSTGRES_DB: ${POSTGRES_DB:-test}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -59,8 +61,10 @@ services:
         condition: service_healthy
       service_a:
         condition: service_started
+    env_file:
+      - service_b/.env
     environment:
-      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-tasks}
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-test}@postgres:5432/${POSTGRES_DB:-test}
       RABBIT_URL: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASS:-guest}@rabbitmq:5672/
       DEBUG: "false"
     restart: unless-stopped
@@ -72,6 +76,8 @@ services:
         condition: service_healthy
       service_a:
         condition: service_started
+    env_file:
+      - consumer/.env
     environment:
       RABBIT_URL: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASS:-guest}@rabbitmq:5672/
       SERVICE_A_URL: http://service_a:8001/api/v1/equipment/cpe
