@@ -87,3 +87,39 @@ curl http://localhost:8000/api/v1/equipment/cpe/ABC123/task/550e8400-e29b-41d4-a
 - RabbitMQ Management: http://localhost:15672 (guest/guest)
 - Healthcheck Service A: http://localhost:8001/api/v1/health
 - Healthcheck Service B: http://localhost:8000/api/v1/health
+
+### Архитектурная схема компонентов (System Topology)
+
+```mermaid
+graph TD
+    %% Стиль для внешних и внутренних элементов
+    classDef clientStyle fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef serviceStyle fill:#bbf,stroke:#333,stroke-width:1px;
+    classDef infraStyle fill:#f96,stroke:#333,stroke-width:1px;
+
+    Client[Пользователь / Скрипт]:::clientStyle
+    
+    subgraph "Инфраструктура Docker Compose"
+        Nginx[Nginx Reverse Proxy]:::serviceStyle
+        SB[Service B <br> FastAPI Frontend]:::serviceStyle
+        DB[(PostgreSQL <br> Хранилище задач)]:::infraStyle
+        RMQ{RabbitMQ <br> Брокер сообщений}:::infraStyle
+        CNS[Consumer <br> Фоновый воркер]:::serviceStyle
+        SA[Service A <br> Синхронная заглушка]:::serviceStyle
+    end
+
+    %% Потоки данных и протоколы
+    Client -- "HTTPS (внешний порт 443/80)" --> Nginx
+    Nginx -- "HTTP (проксирование порт 8000)" --> SB
+    
+    SB -- "SQL (psycopg2)" --> DB
+    SB -- "AMQP (Публикация задач)" --> RMQ
+    RMQ -- "AMQP (Получение результатов)" --> SB
+
+    RMQ -- "AMQP (Извлечение задач)" --> CNS
+    CNS -- "AMQP (Отправка результатов)" --> RMQ
+    
+    CNS -- "HTTP (Синхронный вызов 60 сек)" --> SA
+
+    %% Дополнительная связь для healthcheck (которую мы чинили)
+    SB -- "curl проверка готовности" --> SA

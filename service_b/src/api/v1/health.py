@@ -1,16 +1,12 @@
+from fastapi.responses import HTMLResponse
 from fastapi import APIRouter
+from pathlib import Path
 
 router = APIRouter()
 
 @router.get("/health", tags=["internal"])
 async def health():
     return {"status": "ok"}
-
-from fastapi.responses import HTMLResponse
-from fastapi import APIRouter
-from pathlib import Path
-
-router = APIRouter()
 
 @router.get("/", include_in_schema=False)
 async def index():

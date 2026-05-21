@@ -1,5 +1,5 @@
 import asyncio
-
+import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
@@ -9,8 +9,12 @@ from src.infrastructure.database import init_db
 from src.infrastructure.rabbitmq import RabbitMQClient
 from src.services.task_service import TaskService
 
+logger = logging.getLogger(__name__)
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    logger.info("Стартую")
+    
     init_db()
     
     rabbitmq = RabbitMQClient()
@@ -23,13 +27,22 @@ async def lifespan(app: FastAPI):
         task_id = data.get("task_id")
         status = data.get("status")
         if task_id and status:
+            logger.info(f"Обновлена таска {task_id} на {status}")
             task_service.update_task_status(task_id, status)
     
-    asyncio.create_task(rabbitmq.consume_results(handle_result))
+    consume_task = asyncio.create_task(rabbitmq.consume_results(handle_result))
     
     yield
     
+    logger.info("вырубаюсь")
+    consume_task.cancel()
+    try:
+        await consume_task
+    except asyncio.CancelledError:
+        logger.info("Кроля отменен")
+    
     await rabbitmq.close()
+    logger.info("остановлен")
 
 def create_app() -> FastAPI:
     app = FastAPI(title="Service B - Task Orchestrator", version="1.0.0", lifespan=lifespan)

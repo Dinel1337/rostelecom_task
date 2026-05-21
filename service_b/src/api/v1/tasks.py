@@ -7,7 +7,6 @@ from fastapi import (
 )
 from fastapi.responses import JSONResponse
 
-
 from src.schema import (
     ProvisionRequest,
     CreateTaskResponse,
@@ -15,6 +14,10 @@ from src.schema import (
 )
 from src.domain import SerialRegex
 from src.services.task_service import TaskService
+from src.infrastructure.database import get_db
+
+from sqlalchemy.orm import Session
+
 
 router = APIRouter(
     tags=["Equipment Activation"],
@@ -60,10 +63,10 @@ def get_task_service(request: Request):
 async def create_task(
     equipment_id: str,
     request: ProvisionRequest,
-    task_service: TaskService = Depends(get_task_service)
+    task_service: TaskService = Depends(get_task_service),
 ):
     SerialRegex(equipment_id)
-
+        
     task_id = await task_service.create_task(
         equipment_id=equipment_id,
         parameters=request.parameters.model_dump()
@@ -91,11 +94,12 @@ async def create_task(
 async def get_task_status(
     equipment_id: str,
     task_id: str,
-    task_service: TaskService = Depends(get_task_service)
+    task_service: TaskService = Depends(get_task_service),
+    db: Session = Depends(get_db)
 ):
     SerialRegex(equipment_id)
 
-    task = task_service.get_task_by_id(task_id)
+    task = task_service.get_task_by_id(db, task_id)
     
     if task is None:
         raise HTTPException(
@@ -112,7 +116,6 @@ async def get_task_status(
     if task.status == "completed":
         return TaskStatusResponse(code=200, message="Выполнено")
 
-    return JSONResponse(
-        status_code=204,
-        content={"code": 204, "message": "Таска все еще в обработке!"}
-    )
+    return TaskStatusResponse(code=204, message="Таска все еще выполняется")
+    # но это же не правильно, не по рест апи
+    # return None # правильно
