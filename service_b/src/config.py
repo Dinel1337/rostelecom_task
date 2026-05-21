@@ -2,11 +2,11 @@ from pydantic import computed_field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
-    DB_USER: str
-    DB_PASSWORD: SecretStr
-    DB_HOST: str = "localhost"
+    DB_USER: str = "test"
+    DB_PASSWORD: SecretStr = SecretStr("test")
+    DB_HOST: str = "postgres"
     DB_PORT: int = 5432
-    DB_NAME: str = "tasks"
+    DB_NAME: str = "test"
     
     RABBIT_URL: str = "amqp://guest:guest@rabbitmq:5672/"
     

@@ -38,10 +38,17 @@
       tags: [ 'deploy' ]
 
     - name: Копирование исходного кода проекта на server
-      copy:
-        src: ../
+      synchronize:
+        src: "{{ playbook_dir }}/../"
         dest: /opt/rostelecom_task/
-        mode: '0755'
+        recursive: yes
+        delete: yes
+        rsync_opts:
+          - "--exclude=.git"
+          - "--exclude=.venv"
+          - "--exclude=__pycache__"
+          - "--exclude=.pytest_cache"
+          - "--exclude=postgres_data"
       tags: [ 'deploy' ]
 
     - name: Сборка образов и запуск контейнеров через Docker Compose
