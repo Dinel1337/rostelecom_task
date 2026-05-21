@@ -27,7 +27,9 @@ cp consumer/.env.example consumer/.env
 
 ### Требования
 - Docker & Docker Compose(ЕСЛИ ВЫ НА ВИРТУАЛКЕ, НЕ ЗАБУДЬТЕ УСТАНОВИТЬ!)
-
+```bash
+curl -fsSL https://get.docker.com | sh
+```
 ### Быстрый старт (Docker)
 
 ```bash
