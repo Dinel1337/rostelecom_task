@@ -1,23 +1,27 @@
-
 services:
   postgres:
     image: postgres:15
+    env_file:
+      - .env
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: dinelefox
-      POSTGRES_DB: tasks
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-test}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres}"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   rabbitmq:
     image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-guest}
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -36,21 +40,23 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      RABBIT_URL: amqp://guest:guest@rabbitmq:5672/
+      RABBIT_URL: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASS:-guest}@rabbitmq:5672/
       SERVICE_A_SLEEP: "60"
     restart: unless-stopped
 
   service_b:
-    build: ./service_b
-    command: >
-      sh -c "
-        until curl -f http://service_a:8001/api/v1/health;
-        do
-          echo waiting service_a;
-          sleep 2;
-        done;
-        uvicorn src.main:app --host 0.0.0.0 --port 8000
-      "
+    build:
+      context: ./service_b
+      dockerfile: Dockerfile
+    image: rostelecom_task-service_b
+    container_name: rostelecom_task-service_b-1
+    restart: unless-stopped
+    env_file:
+      - service_b/.env
+    environment:
+      DB_HOST: postgres
+      RABBIT_URL: amqp://guest:guest@rabbitmq:5672/
+    command: sh -c "until curl -f http://service_a:8001/api/v1/health; do echo 'Waiting for service_a...'; sleep 1; done; uvicorn src.main:app --host 0.0.0.0 --port 8000"
     ports:
       - "8000:8000"
     depends_on:
@@ -58,13 +64,6 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-      service_a:
-        condition: service_started
-    environment:
-      DATABASE_URL: postgresql+psycopg2://postgres:dinelefox@postgres:5432/tasks
-      RABBIT_URL: amqp://guest:guest@rabbitmq:5672/
-      DEBUG: "false"
-    restart: unless-stopped
 
   consumer:
     build: ./consumer
@@ -73,8 +72,10 @@ services:
         condition: service_healthy
       service_a:
         condition: service_started
+    env_file:
+      - consumer/.env
     environment:
-      RABBIT_URL: amqp://guest:guest@rabbitmq:5672/
+      RABBIT_URL: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASS:-guest}@rabbitmq:5672/
       SERVICE_A_URL: http://service_a:8001/api/v1/equipment/cpe
       MAX_RETRIES: 3
       RETRY_DELAY: 5.0

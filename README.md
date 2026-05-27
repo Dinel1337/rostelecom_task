@@ -5,7 +5,6 @@
 > * Так же немного странно, 204 статусы с телами ответа???Или пайтон 2.7??Тела ответа в формате списков:)).
 > * А так интересное тестовое, скорее всего это регистрация какого-либо устройства, с минимальной микросервисной архитектурой.
 
-
 ## Компоненты
 
 | Сервис | Порт | Описание |
@@ -18,14 +17,22 @@
 
 ## Запуск
 
-### Требования
-- Docker & Docker Compose
-
-### Быстрый старт (Docker)
-
 ```bash
 git clone https://github.com/Dinel1337/rostelecom_task.git
 cd rostelecom_task
+cp .env.example .env
+cp service_b/.env.example service_b/.env
+cp consumer/.env.example consumer/.env
+```
+
+### Требования
+- Docker & Docker Compose(ЕСЛИ ВЫ НА ВИРТУАЛКЕ, НЕ ЗАБУДЬТЕ УСТАНОВИТЬ!)
+```bash
+curl -fsSL https://get.docker.com | sh
+```
+### Быстрый старт (Docker)
+
+```bash
 docker-compose up --build
 ```
 
@@ -36,17 +43,22 @@ docker-compose up --build
 ### Инструкция по запуску:
 Установите Ansible на управляющую машину (если еще не установлен):
 ```bash
-sudo apt update && sudo apt install ansible -y
+sudo apt update && sudo apt install ansible -y && sudo apt-get install rsync -y 
+ansible-galaxy collection install community.docker
+
+sudo rm -rf /opt/rostelecom_task/*
 ```
 
 Откройте файл ansible/inventory.ini и укажите IP-адрес вашего целевого сервера (или оставьте localhost).
 
-Запустите сценарий деплоя:
-
+ЕСЛИ ДОКЕР НЕ УСТАНОВЛЕН!!!!
 ```Bash
 ansible-playbook -i ansible/inventory.ini ansible/deploy.ansible.yml
 ```
-
+Если установлен
+```Bash
+ansible-playbook -i ansible/inventory.ini ansible/deploy.ansible.yml --skip-tags apt
+```
 ## API Документация
 После запуска сервиса B документация доступна по адресу:
 

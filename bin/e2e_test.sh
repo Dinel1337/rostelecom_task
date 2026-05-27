@@ -3,10 +3,23 @@
 set -e
 
 cleanup() {
+    local exit_code=$?
+    if [ $exit_code -ne 0 ]; then
+        echo "========================================= ENGINE CRASHED ========================================="
+        echo "Скрипт упал! Выводим последние 100 строк логов всех контейнеров, чтобы понять причину:"
+        echo "=================================================================================================="
+        docker compose logs --tail=100
+    fi
+
     echo "Очистка ресурсов..."
     docker compose down
 }
 trap cleanup EXIT
+trap cleanup EXIT
+
+cp .env.example .env
+cp service_b/.env.example service_b/.env
+cp consumer/.env.example consumer/.env
 
 echo "Запуск инфраструктуры..."
 docker compose up -d
